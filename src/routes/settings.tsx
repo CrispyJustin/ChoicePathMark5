@@ -11,6 +11,8 @@ export function Settings() {
   const [newName, setNewName] = useState("");
   const [newAvatar, setNewAvatar] = useState(AVATAR_OPTIONS[0]);
   const [importDone, setImportDone] = useState(false);
+  const [shareEmail, setShareEmail] = useState("");
+  const [shareMessage, setShareMessage] = useState<string | null>(null);
 
   // Read local students for import
   const localStudents: Student[] = (() => {
@@ -27,6 +29,9 @@ export function Settings() {
   const cloudIds = new Set(store.students.map((s) => s.id));
   const toImport = localStudents.filter((s) => !cloudIds.has(s.id));
   const showImport = user && toImport.length > 0 && !importDone;
+  const currentBoardId = (store as typeof store & { currentBoardId?: string | null }).currentBoardId;
+  const currentBoard = ((store as typeof store & { boards?: Array<{ id: string; name: string; owner_id: string }> }).boards ?? []).find((b) => b.id === currentBoardId);
+  const isCurrentBoardOwner = Boolean(user && currentBoard?.owner_id === user.id);
 
   const handleImport = () => {
     if (
@@ -37,6 +42,32 @@ export function Settings() {
       return;
     store.bulkImport(toImport);
     setImportDone(true);
+  };
+
+  const handleShareBoard = async () => {
+    const shareFn = (store as typeof store & { shareCurrentBoard?: (email: string) => Promise<void> }).shareCurrentBoard;
+    if (!shareFn) return;
+    setShareMessage(null);
+    try {
+      await shareFn(shareEmail);
+      setShareEmail("");
+      setShareMessage("Board shared successfully.");
+    } catch (err) {
+      setShareMessage(err instanceof Error ? err.message : "Could not share board.");
+    }
+  };
+
+  const handleRemoveSharedEmail = async (memberId: string, email: string) => {
+    const removeFn = (store as typeof store & { removeSharedEmail?: (memberId: string) => Promise<void> }).removeSharedEmail;
+    if (!removeFn) return;
+    if (!confirm(`Remove ${email} from this board?`)) return;
+    setShareMessage(null);
+    try {
+      await removeFn(memberId);
+      setShareMessage("Shared access removed.");
+    } catch (err) {
+      setShareMessage(err instanceof Error ? err.message : "Could not remove access.");
+    }
   };
 
   const handleLogout = async () => {
@@ -89,6 +120,73 @@ export function Settings() {
             >
               Sign out
             </button>
+          </section>
+        )}
+
+        {/* Board sharing */}
+        {user && (
+          <section className="bg-card border-2 rounded-2xl p-5 space-y-4">
+            <div>
+              <h2 className="text-xl font-bold">Class Board Access</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Share this board with another teacher or aide by email. When they log in with that email, this board will appear as an option for them.
+              </p>
+            </div>
+
+            {isCurrentBoardOwner ? (
+              <div className="flex gap-2 flex-wrap items-center">
+                <input
+                  value={shareEmail}
+                  onChange={(e) => setShareEmail(e.target.value)}
+                  placeholder="teacher@email.com"
+                  type="email"
+                  className="px-3 py-2 rounded-lg border-2 flex-1 min-w-[220px]"
+                />
+                <button
+                  onClick={handleShareBoard}
+                  disabled={!shareEmail.trim() || Boolean((store as typeof store & { sharingBusy?: boolean }).sharingBusy)}
+                  className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-bold disabled:opacity-50"
+                >
+                  Share Board
+                </button>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground rounded-xl border-2 p-3 bg-muted/30">
+                This board was shared with you. The board owner manages who has access.
+              </p>
+            )}
+
+            {shareMessage && (
+              <p className="text-sm font-semibold text-muted-foreground">{shareMessage}</p>
+            )}
+            {(store as typeof store & { sharingError?: string | null }).sharingError && (
+              <p className="text-sm font-semibold text-destructive">
+                {(store as typeof store & { sharingError?: string | null }).sharingError}
+              </p>
+            )}
+
+            <div className="space-y-2">
+              <h3 className="font-bold text-sm">Shared with</h3>
+              {((store as typeof store & { boardMembers?: Array<{ id: string; member_email: string }> }).boardMembers ?? []).length === 0 ? (
+                <p className="text-sm text-muted-foreground">No one else has access yet.</p>
+              ) : (
+                <ul className="space-y-2">
+                  {((store as typeof store & { boardMembers?: Array<{ id: string; member_email: string }> }).boardMembers ?? []).map((member) => (
+                    <li key={member.id} className="flex items-center gap-2 justify-between rounded-xl border-2 p-3">
+                      <span className="font-semibold text-sm">{member.member_email}</span>
+                      {isCurrentBoardOwner && (
+                        <button
+                          onClick={() => handleRemoveSharedEmail(member.id, member.member_email)}
+                          className="px-3 py-1.5 rounded-lg bg-destructive text-destructive-foreground text-sm font-bold"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </section>
         )}
 
