@@ -2,7 +2,7 @@ import { useState } from "react";
 import { AVATAR_OPTIONS, KEY, type Student } from "@/lib/store";
 import { THEMES } from "@/lib/themes";
 import { AppNav } from "@/components/AppNav";
-import { useAppStore } from "@/lib/appStore";
+import { useStore as useAppStore } from "@/lib/store";
 import { useAuth } from "@/lib/auth";
 
 export function Settings() {
