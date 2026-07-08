@@ -1,20 +1,8 @@
 import { useState } from "react";
 import { AVATAR_OPTIONS, KEY, type Student } from "@/lib/store";
-import { {/* Premium Upgrade */}
-        <section className="bg-card border-2 rounded-2xl p-5 border-primary">
-          <h2 className="text-xl font-bold mb-2">ChoicePath Premium</h2>
-          <p className="text-sm text-muted-foreground mb-4">
-            Support the app and remove all banner advertisements from the presentation and settings views.
-          </p>
-          <button 
-             onClick={() => alert("Stripe checkout will open here!")}
-             className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold"
-          >
-            Upgrade to Premium - $2.99/mo
-          </button>
-        </section> } from "@/lib/themes";
+import { THEMES } from "@/lib/themes";
 import { AppNav } from "@/components/AppNav";
-import { useStore as useAppStore } from "@/lib/store";
+import { useAppStore } from "@/lib/appStore";
 import { useAuth } from "@/lib/auth";
 
 export function Settings() {
@@ -42,16 +30,13 @@ export function Settings() {
   const toImport = localStudents.filter((s) => !cloudIds.has(s.id));
   const showImport = user && toImport.length > 0 && !importDone;
 
- // --- Real Ownership Logic Restored ---
-  // 1. Check if a cloud board exists and has an owner_id matching the authenticated user's UUID
-  // 2. Fall back to true if no explicit owner is set yet (to prevent locking you out during loads)
-  const currentBoardOwnerId = store.currentBoard?.owner_id || (store as any).owner_id;
+  // --- Real Ownership Logic Restored ---
+  const currentBoardOwnerId = (store as any).currentBoard?.owner_id || (store as any).owner_id;
   
   const isCurrentBoardOwner = user && currentBoardOwnerId
     ? currentBoardOwnerId === user.id
     : true; 
 
-  // Optional: Keep this temporary console log active so you can monitor it in your browser dev tools (F12)
   console.log("Ownership Debug:", {
     boardOwnerUuid: currentBoardOwnerId,
     loggedInUserUuid: user?.id,
@@ -71,7 +56,7 @@ export function Settings() {
   };
 
   const handleShareBoard = async () => {
-    const shareFn = (store as typeof store & { shareCurrentBoard?: (email: string) => Promise<void> }).shareCurrentBoard;
+    const shareFn = (store as any).shareCurrentBoard;
     if (!shareFn) return;
     setShareMessage(null);
     try {
@@ -84,7 +69,7 @@ export function Settings() {
   };
 
   const handleRemoveSharedEmail = async (memberId: string, email: string) => {
-    const removeFn = (store as typeof store & { removeSharedEmail?: (memberId: string) => Promise<void> }).removeSharedEmail;
+    const removeFn = (store as any).removeSharedEmail;
     if (!removeFn) return;
     if (!confirm(`Remove ${email} from this board?`)) return;
     setShareMessage(null);
@@ -122,8 +107,7 @@ export function Settings() {
                   {toImport.length > 1 ? "s" : ""} found on this device
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  These aren't in your cloud board yet. You can import them
-                  now.
+                  These aren't in your cloud board yet. You can import them now.
                 </p>
                 <button
                   onClick={handleImport}
@@ -170,7 +154,7 @@ export function Settings() {
                 />
                 <button
                   onClick={handleShareBoard}
-                  disabled={!shareEmail.trim() || Boolean((store as typeof store & { sharingBusy?: boolean }).sharingBusy)}
+                  disabled={!shareEmail.trim() || Boolean((store as any).sharingBusy)}
                   className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-bold disabled:opacity-50"
                 >
                   Share Board
@@ -185,19 +169,19 @@ export function Settings() {
             {shareMessage && (
               <p className="text-sm font-semibold text-muted-foreground">{shareMessage}</p>
             )}
-            {(store as typeof store & { sharingError?: string | null }).sharingError && (
+            {(store as any).sharingError && (
               <p className="text-sm font-semibold text-destructive">
-                {(store as typeof store & { sharingError?: string | null }).sharingError}
+                {(store as any).sharingError}
               </p>
             )}
 
             <div className="space-y-2">
               <h3 className="font-bold text-sm">Shared with</h3>
-              {((store as typeof store & { boardMembers?: Array<{ id: string; member_email: string }> }).boardMembers ?? []).length === 0 ? (
+              {((store as any).boardMembers ?? []).length === 0 ? (
                 <p className="text-sm text-muted-foreground">No one else has access yet.</p>
               ) : (
                 <ul className="space-y-2">
-                  {((store as typeof store & { boardMembers?: Array<{ id: string; member_email: string }> }).boardMembers ?? []).map((member) => (
+                  {((store as any).boardMembers ?? []).map((member: any) => (
                     <li key={member.id} className="flex items-center gap-2 justify-between rounded-xl border-2 p-3">
                       <span className="font-semibold text-sm">{member.member_email}</span>
                       {isCurrentBoardOwner && (
@@ -255,14 +239,6 @@ export function Settings() {
               </button>
             ))}
           </div>
-          <div className="mt-4 p-4 border-2 border-dashed rounded-xl bg-muted/30">
-            <div className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-1">
-              Sponsored Theme Preview
-            </div>
-            <div className="text-sm text-muted-foreground">
-              Future seasonal themes from partners will appear here.
-            </div>
-          </div>
         </section>
 
         {/* Students */}
@@ -306,28 +282,29 @@ export function Settings() {
           </div>
         </section>
 
-        {/* Sponsored Theme Area placeholder */}
-        <section className="border-2 border-dashed rounded-2xl p-5 bg-muted/30">
-          <h2 className="text-lg font-bold text-muted-foreground">
-            Sponsored Theme Area
+        {/* Premium Upgrade Area (Replaces old Sponsored Section) */}
+        <section className="bg-card border-2 rounded-2xl p-5 border-primary shadow-sm space-y-3">
+          <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+            ⭐ ChoicePath Premium
           </h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Reserved space for future sponsored seasonal themes. Never shown in
-            Presentation View.
+          <p className="text-sm text-muted-foreground">
+            Support ChoicePath development and permanently remove all top banner advertisements from your dashboards and shared views.
           </p>
+          <div className="pt-1">
+            <button
+              onClick={() => alert("Stripe checkout module coming soon!")}
+              className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm shadow transition-transform hover:scale-[1.01] active:scale-[0.99]"
+            >
+              Upgrade to Premium — $2.99/mo
+            </button>
+          </div>
         </section>
       </main>
     </div>
   );
 }
 
-function AvatarPicker({
-  value,
-  onChange,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-}) {
+function AvatarPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <div className="flex gap-1 flex-wrap">
       {AVATAR_OPTIONS.map((a) => (
@@ -343,15 +320,7 @@ function AvatarPicker({
   );
 }
 
-function StudentRow({
-  student,
-  onUpdate,
-  onDelete,
-}: {
-  student: Student;
-  onUpdate: (id: string, patch: Partial<Student>) => void;
-  onDelete: (id: string) => void;
-}) {
+function StudentRow({ student, onUpdate, onDelete }: { student: Student; onUpdate: (id: string, patch: Partial<Student>) => void; onDelete: (id: string) => void }) {
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(student.name);
   const [avatar, setAvatar] = useState(student.avatar);
