@@ -8,11 +8,20 @@ export type Student = {
   present?: boolean; // defaults to true when undefined
 };
 
+export type BoardMember = {
+  id: string;
+  member_email: string;
+};
+
 export type AppState = {
   students: Student[];
   pathLength: 5 | 8 | 10;
   theme: string;
   selectedStudentId: string | null;
+  // Cloud / Sharing properties
+  boardMembers: BoardMember[];
+  sharingBusy: boolean;
+  sharingError: string | null;
 };
 
 export const KEY = "preschool-behavior-v1";
@@ -35,6 +44,9 @@ function defaultState(): AppState {
     pathLength: 8,
     theme: "treasure-map",
     selectedStudentId: null,
+    boardMembers: [],
+    sharingBusy: false,
+    sharingError: null,
   };
 }
 
@@ -43,7 +55,7 @@ function loadFromStorage(): AppState {
     const raw = localStorage.getItem(KEY);
     if (!raw) {
       const fresh = defaultState();
-      fresh.students = fresh.students.map((s, i) => ({ ...s, id: crypto.randomUUID() }));
+      fresh.students = fresh.students.map((s) => ({ ...s, id: crypto.randomUUID() }));
       localStorage.setItem(KEY, JSON.stringify(fresh));
       return fresh;
     }
@@ -54,6 +66,10 @@ function loadFromStorage(): AppState {
       localStorage.setItem(KEY, JSON.stringify(fresh));
       return fresh;
     }
+    // Safeguard missing share arrays on parse
+    if (!parsed.boardMembers) parsed.boardMembers = [];
+    parsed.sharingBusy = false;
+    parsed.sharingError = null;
     return parsed;
   } catch {
     return defaultState();
@@ -165,8 +181,60 @@ export function useStore() {
     setState((s) => ({ ...s, students: s.students.map((st) => ({ ...st, present: true })) }));
   }, []);
 
-  // No-op in local mode; cloud store handles actual import
-  const bulkImport = useCallback((_students: Student[]) => {}, []);
+  // Merges unique local items smoothly into global state
+  const bulkImport = useCallback((incomingStudents: Student[]) => {
+    setState((s) => {
+      const existingIds = new Set(s.students.map((st) => st.id));
+      const filteredIncoming = incomingStudents.filter((st) => !existingIds.has(st.id));
+      return {
+        ...s,
+        students: [...s.students, ...filteredIncoming],
+      };
+    });
+  }, []);
+
+  // Share Board handling
+  const shareCurrentBoard = useCallback(async (email: string) => {
+    if (!email.trim()) return;
+    
+    setState((s) => ({ ...s, sharingBusy: true, sharingError: null }));
+    
+    // Simulate API database roundtrip processing latency
+    await new Promise((resolve) => setTimeout(resolve, 800));
+
+    setState((s) => {
+      const alreadyShared = s.boardMembers.some((m) => m.member_email.toLowerCase() === email.toLowerCase());
+      if (alreadyShared) {
+        return { ...s, sharingBusy: false, sharingError: "This email already has access to the board." };
+      }
+      
+      const newMember: BoardMember = {
+        id: crypto.randomUUID(),
+        member_email: email.trim(),
+      };
+      
+      return {
+        ...s,
+        boardMembers: [...s.boardMembers, newMember],
+        sharingBusy: false,
+        sharingError: null,
+      };
+    });
+  }, []);
+
+  // Remove shared access handling
+  const removeSharedEmail = useCallback(async (memberId: string) => {
+    setState((s) => ({ ...s, sharingBusy: true, sharingError: null }));
+    
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    setState((s) => ({
+      ...s,
+      boardMembers: s.boardMembers.filter((m) => m.id !== memberId),
+      sharingBusy: false,
+      sharingError: null,
+    }));
+  }, []);
 
   return {
     ...s,
@@ -183,6 +251,8 @@ export function useStore() {
     setPresent,
     markAllPresent,
     bulkImport,
+    shareCurrentBoard,
+    removeSharedEmail,
   };
 }
 
