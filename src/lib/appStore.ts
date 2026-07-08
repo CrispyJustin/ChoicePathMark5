@@ -3,15 +3,26 @@ import { useStore } from "./store";
 import { useCloudStore } from "./cloudStore";
 
 export type AppState = {
-  // ... your existing state ...
-  isPremium: boolean; // Add this line
+  students: any[];
+  pathLength: 5 | 8 | 10;
+  theme: string;
+  selectedStudentId: string | null;
+  boardMembers: any[];
+  sharingBusy: boolean;
+  sharingError: string | null;
+  isPremium: boolean; 
 };
 
-// Inside defaultState():
-isPremium: false,
 export function useAppStore() {
   const { user } = useAuth();
   const localStore = useStore();
   const cloudStore = useCloudStore(user);
-  return user ? cloudStore : localStore;
+  
+  const activeStore = user ? cloudStore : localStore;
+
+  // Integrates the premium flag cleanly into the returned combined state object
+  return {
+    ...activeStore,
+    isPremium: (activeStore as any).isPremium ?? false,
+  };
 }
