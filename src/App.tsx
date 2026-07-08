@@ -7,7 +7,22 @@ import { Attendance } from "@/routes/attendance";
 import { Settings } from "@/routes/settings";
 import "./styles.css";
 import { useAppStore } from "@/lib/appStore";
+import { useCloudStore } from "@/lib/cloudStore"; // or wherever your hook lives
+import { AwesomeAdBanner } from "@/components/AwesomeAdBanner";
 
+export function BoardView() {
+  const { isPremium } = useCloudStore();
+
+  return (
+    <div className="container">
+      {/* Conditionally render ads */}
+      {!isPremium && <AwesomeAdBanner />}
+      
+      {/* Your Board Component */}
+      <MainBoard />
+    </div>
+  );
+}
 function SupabaseErrorScreen() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
