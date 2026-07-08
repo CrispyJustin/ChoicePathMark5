@@ -1,6 +1,18 @@
 import { useState } from "react";
 import { AVATAR_OPTIONS, KEY, type Student } from "@/lib/store";
-import { THEMES } from "@/lib/themes";
+import { {/* Premium Upgrade */}
+        <section className="bg-card border-2 rounded-2xl p-5 border-primary">
+          <h2 className="text-xl font-bold mb-2">ChoicePath Premium</h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            Support the app and remove all banner advertisements from the presentation and settings views.
+          </p>
+          <button 
+             onClick={() => alert("Stripe checkout will open here!")}
+             className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold"
+          >
+            Upgrade to Premium - $2.99/mo
+          </button>
+        </section> } from "@/lib/themes";
 import { AppNav } from "@/components/AppNav";
 import { useStore as useAppStore } from "@/lib/store";
 import { useAuth } from "@/lib/auth";
