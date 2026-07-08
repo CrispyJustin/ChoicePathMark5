@@ -23,23 +23,28 @@ export function Settings() {
       return Array.isArray(parsed.students) ? parsed.students : [];
     } catch {
       return [];
-// 1. Get the current board ID
-  const currentBoardId = (store as any).currentBoardId;
+    }
+  })();
 
-  // 2. Find the board by ID, or default to your only board if the ID isn't set yet
-  const boardsList = (store as any).boards ?? [];
-  const currentBoard = boardsList.find((b: any) => b.id === currentBoardId) || boardsList[0];
+  const cloudIds = new Set(store.students.map((s) => s.id));
+  const toImport = localStudents.filter((s) => !cloudIds.has(s.id));
+  const showImport = user && toImport.length > 0 && !importDone;
 
-  // 3. Evaluate ownership (with a temporary safety valve if things are still loading)
+  // --- Strict Type Definition & Ownership Logic ---
+  const typedStore = store as typeof store & { 
+    currentBoardId?: string | null;
+    boards?: Array<{ id: string; name: string; owner_id: string }>;
+  };
+
+  const currentBoardId = typedStore.currentBoardId;
+  const boardsList = typedStore.boards ?? [];
+  const currentBoard = boardsList.find((b) => b.id === currentBoardId) || boardsList[0];
+  
   const isCurrentBoardOwner = Boolean(
     user && 
     (currentBoard?.owner_id === user.id || boardsList.length === 1)
   );
-  const toImport = localStudents.filter((s) => !cloudIds.has(s.id));
-  const showImport = user && toImport.length > 0 && !importDone;
-  const currentBoardId = (store as typeof store & { currentBoardId?: string | null }).currentBoardId;
-  const currentBoard = ((store as typeof store & { boards?: Array<{ id: string; name: string; owner_id: string }> }).boards ?? []).find((b) => b.id === currentBoardId);
-  const isCurrentBoardOwner = Boolean(user && currentBoard?.owner_id === user.id);
+  // ------------------------------------------------
 
   const handleImport = () => {
     if (
