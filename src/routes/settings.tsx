@@ -1,3 +1,9 @@
+export function Settings() {
+  const store = useAppStore();
+  const { user, logout } = useAuth();
+  // ... your existing states ...
+  const [activeTab, setActiveTab] = useState<'settings' | 'privacy'>('settings');
+  // ...
 import { useState } from "react";
 import { AVATAR_OPTIONS, KEY, type Student } from "@/lib/store";
 import { THEMES } from "@/lib/themes";
