@@ -30,9 +30,22 @@ export function Settings() {
   const toImport = localStudents.filter((s) => !cloudIds.has(s.id));
   const showImport = user && toImport.length > 0 && !importDone;
 
-  // --- Temporary Bypass: Always force ownership UI to be visible ---
-  const isCurrentBoardOwner = true;
-  // -----------------------------------------------------------------
+ // --- Real Ownership Logic Restored ---
+  // 1. Check if a cloud board exists and has an owner_id matching the authenticated user's UUID
+  // 2. Fall back to true if no explicit owner is set yet (to prevent locking you out during loads)
+  const currentBoardOwnerId = store.currentBoard?.owner_id || (store as any).owner_id;
+  
+  const isCurrentBoardOwner = user && currentBoardOwnerId
+    ? currentBoardOwnerId === user.id
+    : true; 
+
+  // Optional: Keep this temporary console log active so you can monitor it in your browser dev tools (F12)
+  console.log("Ownership Debug:", {
+    boardOwnerUuid: currentBoardOwnerId,
+    loggedInUserUuid: user?.id,
+    isOwnerResult: isCurrentBoardOwner
+  });
+  // -------------------------------------
 
   const handleImport = () => {
     if (
