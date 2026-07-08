@@ -96,6 +96,54 @@ export function Settings() {
     <div className="min-h-screen bg-background">
       <AppNav />
       <main className="max-w-4xl mx-auto p-4 space-y-8">
+        
+        {/* Simple Tab Navigation */}
+        <div className="flex gap-4 border-b-2 border-border mb-6">
+          <button
+            onClick={() => setActiveTab('settings')}
+            className={`pb-2 font-bold ${activeTab === 'settings' ? 'border-b-2 border-primary' : 'text-muted-foreground'}`}
+          >
+            Settings
+          </button>
+          <button
+            onClick={() => setActiveTab('privacy')}
+            className={`pb-2 font-bold ${activeTab === 'privacy' ? 'border-b-2 border-primary' : 'text-muted-foreground'}`}
+          >
+            Privacy Policy
+          </button>
+        </div>
+
+        {activeTab === 'privacy' ? (
+            <div className="bg-card border-2 rounded-2xl p-6 space-y-4 text-sm leading-relaxed text-muted-foreground">
+                <h1 className="text-2xl font-bold text-foreground">Privacy Policy</h1>
+                <p><strong>Effective Date:</strong> July 8, 2026</p>
+                <p>ChoicePath is committed to protecting the privacy of educators and their students. We collect only the information necessary to provide our classroom management services.</p>
+                <h2 className="font-bold text-foreground">1. Information We Collect</h2>
+                <p>We collect your email address for authentication and classroom data (student names, avatars, and progress) that you input.</p>
+                <h2 className="font-bold text-foreground">2. Data Security & Sharing</h2>
+                <p>We do not sell your data. Access is strictly controlled via Row-Level Security. Data is only shared with those you explicitly invite to your board.</p>
+                <h2 className="font-bold text-foreground">3. Your Rights</h2>
+                <p>You may edit or delete any data at any time. For questions, please contact us.</p>
+            </div>
+        ) : (
+            <>
+                {/* --- PASTE ALL YOUR EXISTING SETTINGS SECTIONS HERE --- */}
+                {/* Account Section */}
+                {/* Board Sharing Section */}
+                {/* Path Length Section */}
+                {/* Theme Section */}
+                {/* Students Section */}
+                {/* Premium Section */}
+            </>
+        )}
+      </main>
+    </div>
+  );
+}
+  return (
+    <div className="min-h-screen bg-background">
+      <AppNav />
+      <main className="max-w-4xl mx-auto p-4 space-y-8">
         <h1 className="text-3xl font-extrabold">Settings</h1>
 
         {/* Account */}
