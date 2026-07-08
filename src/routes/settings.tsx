@@ -33,7 +33,7 @@ export function Settings() {
   const toImport = localStudents.filter((s) => !cloudIds.has(s.id));
   const showImport = user && toImport.length > 0 && !importDone;
 
-  // --- Real Ownership Logic ---
+  // --- Ownership Logic ---
   const currentBoardOwnerId = (store as any).currentBoard?.owner_id || (store as any).owner_id;
   const isCurrentBoardOwner = user && currentBoardOwnerId ? currentBoardOwnerId === user.id : true; 
 
@@ -105,8 +105,8 @@ export function Settings() {
             <h2 className="font-bold text-foreground">1. Information We Collect</h2>
             <p>We collect your email address for authentication and classroom data (student names, avatars, and progress) that you input into the application.</p>
             
-            <h2 className="font-bold text-foreground">2. Data Security & Sharing</h2>
-            <p>We do not sell your data. Access is strictly controlled via Row-Level Security. Data is only shared with those you explicitly invite to your board.</p>
+            <h2 className="font-bold text-foreground">2. Data Security & Advertising</h2>
+            <p>We do not sell your data. We partner with SuperAwesome to serve contextually relevant advertisements. These advertisements are COPPA-compliant, do not collect personal information from children, and do not perform behavioral tracking.</p>
             
             <h2 className="font-bold text-foreground">3. Your Rights</h2>
             <p>You may edit or delete any data at any time via the Settings menu. For questions, please contact us at <strong>88jbailey@gmail.com</strong>.</p>
