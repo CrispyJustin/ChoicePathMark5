@@ -6,7 +6,33 @@ import { ClassBoard } from "@/routes/index";
 import { Attendance } from "@/routes/attendance";
 import { Settings } from "@/routes/settings";
 import "./styles.css";
+import { useAppStore } from "@/lib/appStore";
+// ... other imports
 
+export default function App() {
+  const isPremium = useAppStore((state) => state.isPremium);
+
+  return (
+    <div className="flex flex-col min-h-screen">
+      <AppNav />
+      
+      {/* The COPPA-Compliant Banner Area */}
+      {!isPremium && (
+        <div className="w-full bg-muted border-b p-2 flex justify-center items-center">
+          <div className="max-w-[320px] h-[50px] bg-card border-dashed border-2 text-xs text-center flex items-center justify-center text-muted-foreground">
+             {/* When you register with Kidoz/SuperAwesome, their React component goes here */}
+             Advertisement - Upgrade to Premium to remove
+          </div>
+        </div>
+      )}
+
+      {/* Your main app content */}
+      <main className="flex-grow">
+         {/* Your Board or Settings Router goes here */}
+      </main>
+    </div>
+  );
+}
 function SupabaseErrorScreen() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
