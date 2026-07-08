@@ -23,10 +23,18 @@ export function Settings() {
       return Array.isArray(parsed.students) ? parsed.students : [];
     } catch {
       return [];
-    }
-  })();
+// 1. Get the current board ID
+  const currentBoardId = (store as any).currentBoardId;
 
-  const cloudIds = new Set(store.students.map((s) => s.id));
+  // 2. Find the board by ID, or default to your only board if the ID isn't set yet
+  const boardsList = (store as any).boards ?? [];
+  const currentBoard = boardsList.find((b: any) => b.id === currentBoardId) || boardsList[0];
+
+  // 3. Evaluate ownership (with a temporary safety valve if things are still loading)
+  const isCurrentBoardOwner = Boolean(
+    user && 
+    (currentBoard?.owner_id === user.id || boardsList.length === 1)
+  );
   const toImport = localStudents.filter((s) => !cloudIds.has(s.id));
   const showImport = user && toImport.length > 0 && !importDone;
   const currentBoardId = (store as typeof store & { currentBoardId?: string | null }).currentBoardId;
