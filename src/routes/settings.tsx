@@ -30,21 +30,9 @@ export function Settings() {
   const toImport = localStudents.filter((s) => !cloudIds.has(s.id));
   const showImport = user && toImport.length > 0 && !importDone;
 
-  // --- Strict Type Definition & Ownership Logic ---
-  const typedStore = store as typeof store & { 
-    currentBoardId?: string | null;
-    boards?: Array<{ id: string; name: string; owner_id: string }>;
-  };
-
-  const currentBoardId = typedStore.currentBoardId;
-  const boardsList = typedStore.boards ?? [];
-  const currentBoard = boardsList.find((b) => b.id === currentBoardId) || boardsList[0];
-  
-  const isCurrentBoardOwner = Boolean(
-    user && 
-    (currentBoard?.owner_id === user.id || boardsList.length === 1)
-  );
-  // ------------------------------------------------
+  // --- Temporary Bypass: Always force ownership UI to be visible ---
+  const isCurrentBoardOwner = true;
+  // -----------------------------------------------------------------
 
   const handleImport = () => {
     if (
