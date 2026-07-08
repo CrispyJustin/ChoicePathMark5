@@ -13,16 +13,16 @@ import {
 
 const LOCAL_KEY = "preschool-behavior-v1";
 
+// Add isPremium to your CloudState type
 type CloudState = {
-  students: Student[];
-  boardMembers: any[]; // Added
-  pathLength: 5 | 8 | 10;
-  theme: string;
-  selectedStudentId: string | null;
-  hydrated: boolean;
-  loadError: string | null;
-  sharingBusy: boolean; // Added
-  sharingError: string | null; // Added
+  // ... existing fields ...
+  isPremium: boolean; // Add this
+};
+
+// ... inside your initial _cloudState ...
+let _cloudState: CloudState = {
+  // ... existing fields ...
+  isPremium: false, // Default to false (Free)
 };
 
 // ... (keep readLocalSettings and saveLocalSettings functions as they were) ...
